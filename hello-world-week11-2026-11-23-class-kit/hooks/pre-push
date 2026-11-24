@@ -1,0 +1,40 @@
+#!/bin/sh
+# pre-push: a gate. Git runs this file just before a push, and the push only happens if it ends without an error.
+#
+# Set it up once, from your project folder:
+#
+#     git config core.hooksPath hooks
+#
+# (On Mac or Linux, also: chmod +x hooks/pre-push)
+#
+# After that, every `git push` asks two questions first:
+#   1. Is everything committed?
+#   2. Do the checks in checks/check.mjs pass?
+#
+# To push anyway, once, when you have a reason: git push --no-verify
+# Say why in your process record. A gate you skip without a reason is not a gate.
+
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+# 1. Everything committed? Uncommitted work would not be in the push, and the checks would be reading files nobody else gets.
+if [ -n "$(git status --porcelain)" ]; then
+  echo "pre-push: there are changes that are not committed. Commit them or put them aside first:"
+  git status --short
+  exit 1
+fi
+
+# 2. The checks.
+if [ -f checks/check.mjs ]; then
+  node checks/check.mjs || { echo "pre-push: the checks did not pass, so nothing was pushed."; exit 1; }
+else
+  echo "pre-push: checks/check.mjs is not here, so the checks cannot run and nothing was pushed."
+  echo "          Put the check script back, or push once without the gate: git push --no-verify"
+  exit 1
+fi
+
+# A reminder, not a gate: work reaches the main line by merging a branch you looked at.
+if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+  echo "pre-push: pushing $branch. If this change was made on a branch and merged, carry on."
+fi
+
+echo "pre-push: passed. Pushing $branch."

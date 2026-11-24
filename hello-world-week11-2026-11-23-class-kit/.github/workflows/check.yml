@@ -1,0 +1,14 @@
+# check.yml: runs checks/check.mjs on GitHub every time this project is pushed.
+# GitHub calls this an Action. It needs no setup beyond this file being in .github/workflows/.
+# The result shows as a green tick or a red cross beside each commit on GitHub.
+name: Check
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node checks/check.mjs

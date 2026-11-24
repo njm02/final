@@ -1,0 +1,16 @@
+# Secrets: never commit these
+.env
+.env.*
+secrets.h
+
+# Dependencies & builds
+node_modules/
+__pycache__/
+dist/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Backups
+*.bak
